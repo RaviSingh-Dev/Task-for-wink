@@ -1,2 +1,4 @@
-# Task-for-wink
-Created with CodeSandbox
+Steps to install and run:-
+1.npm install
+2.npm start
+

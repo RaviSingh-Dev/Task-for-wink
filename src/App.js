@@ -1,52 +1,75 @@
-import React, { useState } from "react";
+import React, { useState} from "react";
+
+import Pagination from './pagination/pagination';
+import CardData from './BookCard/BookCard-component';
 import axios from "axios";
 import "./styles.css";
 
-export default function App() {
+function App() {
+
   const [book, setBook] = useState("");
   const [result, setResult] = useState([]);
-  const [apikey, setApiKey] = useState(
-    "AIzaSyDfjFnMf6sqQlB4eS7mZaGtms4kth-l58Q"
-  );
+  const[currentPage,setCurrentPage]=useState(0);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = e => {
     const val = e.target.value;
     setBook(val);
   };
-
-  const handleSubmit = (e) => {
+  
+  const handleSubmit = e => {
     e.preventDefault();
-    axios
-      .get(
-        `https://www.googleapis.com/books/v1/volumes?q=${book}&key=${apikey}&maxResults=10`
-      )
-      .then((res) => {
-        console.log(res.data.items);
-        setResult(res.data.items);
-      });
+    axios.get(`https://www.googleapis.com/books/v1/volumes?q=${book}&key=AIzaSyBBuev5bakwhCXknPw8GtefmPvwja32Arw&maxResults=40`)
+    .then(data=> setResult(data.data.items));
   };
+
+  const booksPerPage=12;
+  const indexOfLastBook=currentPage*booksPerPage;
+  const currentBook=result.slice(indexOfLastBook,indexOfLastBook+booksPerPage);
+
+  const pageCountperPage=Math.ceil(result.length/booksPerPage);
+
+   const changePage=({selected})=>{
+        setCurrentPage(selected);
+     }  
+
+
   return (
-    <div className="container">
-      <h1>Book Search App</h1>
-      <form onSubmit={handleSubmit}>
+    <div className="container mt-4">
+      <h1 className="text-primary d-flex justify-content-center">Book Search App</h1>
+      <form onSubmit={handleSubmit} className="form-group d-flex justify-content-center">
         <div className="form-group">
           <input
             type="text"
             onChange={handleInputChange}
-            className="form-control mt-20"
+            className="form-control m-10"
             placeholder="Search Books...."
             autoComplete="off"
           />
         </div>
-        <button type="submit" className="btn btn-danger">
+        <button type="submit" className="btn btn-danger mb-auto">
           Search
         </button>
       </form>
-      {result.map((book) => (
-        <a target="_blank" href={book.volumeInfo.previewLink}>
-          <img src={book.volumeInfo.imageLinks.thumbnail} alt={book.title} />
-        </a>
-      ))}
+      {
+        currentBook.map(bookVal => (
+            <div className="style" key={bookVal.id}>
+              <CardData
+              thumbnail={bookVal.volumeInfo.imageLinks.thumbnail}
+              title={bookVal.volumeInfo.title}
+              pageCount={bookVal.volumeInfo.pageCount}
+              language={bookVal.volumeInfo.language}
+              authors={bookVal.volumeInfo.authors}
+              publisher={bookVal.volumeInfo.publisher}
+              description={bookVal.volumeInfo.description}
+              infoLink={bookVal.volumeInfo.infoLink}
+                />
+            </div>
+          ))
+       } 
+       <Pagination loading={currentBook} changePage={changePage} pageCountperPage={pageCountperPage}/>        
     </div>
+
   );
 }
+
+export default App;
